@@ -1,0 +1,34 @@
+name: botanary-dev
+
+services:
+  backend:
+    build:
+      context: .
+      target: runtime
+    image: botanary-backend:dev
+    container_name: botanary-backend-dev
+    restart: unless-stopped
+    env_file: [.env]
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: botanary
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-botanary}
+      POSTGRES_DB: botanary
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U botanary"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

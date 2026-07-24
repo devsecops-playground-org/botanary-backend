@@ -1,0 +1,31 @@
+project: botanary
+component: backend
+type: service
+runtime: go
+package_manager: gomod
+
+test:
+  command: go test ./... -covermode=atomic -coverprofile=coverage.out
+  lint: go vet ./...
+  coverage_min: 70
+  ai_review: false
+
+build:
+  dockerfile: Dockerfile
+  context: .
+
+deploy:
+  target: vm
+  service: backend
+  container_name: botanary-backend
+  compose_file: docker-compose.prod.yml
+  health:
+    path: /health
+    port: 8080
+  environments:
+    staging:
+      branch: deploy/staging
+      url: https://api.staging.botanary.dev
+    production:
+      branch: deploy/prod
+      url: https://api.botanary.dev
